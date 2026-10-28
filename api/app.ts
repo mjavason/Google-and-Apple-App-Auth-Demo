@@ -4,6 +4,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import 'express-async-errors';
 import morgan from 'morgan';
 import { BASE_URL, PORT } from './constants';
+import { adminAuth } from './firebase.config';
 import { setupSwagger } from './swagger.config';
 
 //#region App Setup
@@ -22,7 +23,86 @@ setupSwagger(app, BASE_URL);
 //#endregion App Setup
 
 //#region Code here
-console.log('Hello world');
+
+/**
+ * @swagger
+ * /firebase/sign-in:
+ *   post:
+ *     summary: Sign in with Firebase ID token
+ *     description: Verifies a Firebase ID token and returns user information.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 description: Firebase ID token
+ *                 example: eyJhbGciOiJSUzI1NiIsZCI6Ij...
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 uid:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 photo:
+ *                   type: string
+ *       400:
+ *         description: Missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
+app.post('/firebase/sign-in', async (req: Request, res: Response) => {
+  const { idToken } = req.body;
+  if (!idToken) {
+    return res.status(400).json({ success: false, message: 'Missing token' });
+  }
+
+  try {
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const { uid, email, name, picture } = decoded;
+    res.json({
+      success: true,
+      uid,
+      email,
+      name,
+      photo: picture,
+    });
+  } catch (err) {
+    res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+});
 //#endregion
 
 //#region Server Setup
