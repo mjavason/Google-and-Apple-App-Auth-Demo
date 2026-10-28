@@ -43,7 +43,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "cloud-build": "npx eas-cli@26.0.0 build --platform android --profile development"
+    "expo:cloud-build": "npx eas-cli@26.0.0 build --platform android --profile development",
+    "expo:doctor": "npx expo-doctor && npx expo config --type prebuild"
   },
   "private": true
 }

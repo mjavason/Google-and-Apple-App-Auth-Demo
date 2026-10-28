@@ -1,37 +1,66 @@
+import { auth } from '@/lib/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 
 GoogleSignin.configure({
-  // OAuth 2.0 client ID for the Web application.
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
 });
 
-export async function signInWithGoogle() {
-  await GoogleSignin.hasPlayServices({
-    showPlayServicesUpdateDialog: true,
-  });
+export interface BackendUser {
+  success: boolean;
+  uid: string;
+  email: string;
+  name: string;
+  photo: string;
+}
 
-  const response = await GoogleSignin.signIn();
+export async function googleLogin(): Promise<BackendUser | null> {
+  // 1. Open Google's sign-in UI.
+  await GoogleSignin.hasPlayServices();
 
-  if (response.type !== 'success') {
+  const googleResult = await GoogleSignin.signIn();
+
+  // The user cancelled the flow.
+  if (googleResult.type !== 'success') {
     return null;
   }
 
-  const idToken = response.data.idToken;
+  // 2. Get the Google ID token.
+  const googleIdToken = googleResult.data.idToken;
 
-  if (!idToken) {
-    throw new Error('Google sign-in did not return an ID token');
+  if (!googleIdToken) {
+    throw new Error('Google did not return an ID token');
   }
 
-  const credential = GoogleAuthProvider.credential(idToken);
+  // 3. Exchange the Google credential for a Firebase session.
+  const credential = GoogleAuthProvider.credential(googleIdToken);
 
-  const result = await signInWithCredential(auth, credential);
+  const firebaseResult = await signInWithCredential(auth, credential);
 
-  return {
-    uid: result.user.uid,
-    email: result.user.email,
-    displayName: result.user.displayName,
-    photoURL: result.user.photoURL,
-  };
+  // 4. Get the Firebase ID token expected by your backend.
+  const firebaseIdToken = await firebaseResult.user.getIdToken();
+
+  // 5. Send it to Express.
+  const response = await fetch(`${API_URL}/firebase/sign-in`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      idToken: firebaseIdToken,
+    }),
+  });
+
+  const data: BackendUser | { success: false; message: string } =
+    await response.json();
+
+  // 6. Handle backend errors.
+  if (!response.ok || !data.success) {
+    throw new Error('message' in data ? data.message : 'Authentication failed');
+  }
+
+  // 7. Return the user created or identified by your backend.
+  return data;
 }
