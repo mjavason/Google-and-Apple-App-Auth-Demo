@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { googleLogin } from '../features/auth/google-sign-in';
+import { googleLogin, BackendUser } from '../features/auth/google-sign-in';
 
 export default function App() {
   const [loading, setLoading] = useState(false);
