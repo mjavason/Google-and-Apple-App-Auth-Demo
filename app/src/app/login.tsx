@@ -16,14 +16,14 @@ export default function App() {
       if (result) {
         setUser(result);
       }
-    } catch (error) {
-      Alert.alert(
-        'Login failed',
-        error instanceof Error ? error.message : 'Something went wrong',
-      );
+    } catch (error: any) {
+      Alert.alert('Login failed', error?.message);
+      console.log(error?.message);
     } finally {
       setLoading(false);
     }
+
+    // testNetwork(API_URL);
   }
 
   return (

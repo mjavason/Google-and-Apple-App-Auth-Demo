@@ -1,6 +1,5 @@
+import { API_URL } from '@/common/constants/env.constants';
 import { auth } from './firebase';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 
 export async function apiRequest<T>(
   path: string,

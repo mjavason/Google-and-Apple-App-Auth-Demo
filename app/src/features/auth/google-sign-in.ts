@@ -1,11 +1,13 @@
+import {
+  API_URL,
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+} from '@/common/constants/env.constants';
 import { auth } from '@/lib/firebase';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL!;
-
 GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+  webClientId: EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 });
 
 export interface BackendUser {
@@ -19,8 +21,10 @@ export interface BackendUser {
 export async function googleLogin(): Promise<BackendUser | null> {
   // 1. Open Google's sign-in UI.
   await GoogleSignin.hasPlayServices();
+  console.log(EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
 
   const googleResult = await GoogleSignin.signIn();
+  console.log('reaching here');
 
   // The user cancelled the flow.
   if (googleResult.type !== 'success') {
