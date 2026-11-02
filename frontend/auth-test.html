@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuthSession Test</title>
+</head>
+<body>
+    <h2>AuthSession Test</h2>
+
+    <p id="status">Waiting...</p>
+
+    <button id="redirectBtn">Return to Expo App</button>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+
+        const redirectUri = params.get("redirect_uri");
+
+        const status = document.getElementById("status");
+        const button = document.getElementById("redirectBtn");
+
+        if (!redirectUri) {
+            status.textContent = "Missing redirect URI";
+            button.disabled = true;
+        }
+
+        button.addEventListener("click", () => {
+            status.textContent = "Redirecting to Expo...";
+
+            window.location.href = redirectUri;
+        });
+    </script>
+</body>
+</html>
