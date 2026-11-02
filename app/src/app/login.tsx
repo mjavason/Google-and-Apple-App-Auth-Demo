@@ -4,6 +4,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 
+WebBrowser.maybeCompleteAuthSession();
+
 type AuthenticatedUser = {
   uid: string;
   email: string | null;
@@ -19,18 +21,16 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      // Generate a random value to validate the authentication redirect.
+      // Generate a unique state to protect the authentication handoff.
       const state = Crypto.randomUUID();
 
       const loginUrl = new URL(FRONTEND_AUTH_URL);
       loginUrl.searchParams.set('state', state);
 
-      // Must match the redirect URL used by the hosted frontend.
-      const redirectUrl = 'app://auth';
-
+      // Open the hosted Google login page.
       const result = await WebBrowser.openAuthSessionAsync(
         loginUrl.toString(),
-        redirectUrl,
+        'app://auth',
       );
 
       if (result.type !== 'success') {
@@ -42,31 +42,32 @@ export default function LoginPage() {
       const code = callbackUrl.searchParams.get('code');
       const returnedState = callbackUrl.searchParams.get('state');
 
+      // Validate the authentication response.
       if (!code || returnedState !== state) {
         throw new Error('Invalid authentication response.');
       }
 
-      // Redeem the temporary code with your backend.
+      // Exchange the one-time authorization code for user details.
       const response = await fetch(`${API_URL}/auth/mobile/redeem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          code,
-          state,
-        }),
+        body: JSON.stringify({ code, state }),
       });
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
+      if (!response.ok || !data.success || !data.user?.uid) {
         throw new Error(data.message || 'Authentication failed.');
       }
 
       setUser(data.user);
 
-      Alert.alert('Success', `Welcome ${data.user.email}`);
+      Alert.alert(
+        'Success',
+        `Welcome ${data.user.email ?? data.user.name ?? 'User'}`,
+      );
     } catch (error) {
       console.error('Sign-in error:', error);
 
