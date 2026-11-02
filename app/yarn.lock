@@ -952,6 +952,15 @@
     "@babel/core" "^7.25.2"
     "@babel/plugin-transform-modules-commonjs" "^7.24.8"
 
+"@expo/require-utils@^58.0.5":
+  version "58.0.5"
+  resolved "https://registry.yarnpkg.com/@expo/require-utils/-/require-utils-58.0.5.tgz#f41c42faaa7287210a332545d36b73bbefb0d381"
+  integrity sha512-14dGubYUBmJjK9aqVSGnwSDs9uaxfzvtqJugtMCEWyuTa/eIvToUbzUwpKCSek6S/hYSEYcgds23vDJhXSBpbQ==
+  dependencies:
+    "@babel/code-frame" "^7.20.0"
+    "@babel/core" "^7.25.2"
+    "@babel/plugin-transform-modules-commonjs" "^7.24.8"
+
 "@expo/router-server@^58.0.18":
   version "58.0.18"
   resolved "https://registry.yarnpkg.com/@expo/router-server/-/router-server-58.0.18.tgz#8baf948cf345baab27bdef7a88d18d9f89b1cb57"
@@ -2458,6 +2467,11 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
+expo-application@~58.1.2:
+  version "58.1.2"
+  resolved "https://registry.yarnpkg.com/expo-application/-/expo-application-58.1.2.tgz#6ce5f512bbaaa912e83d02efa821bf557ba79c92"
+  integrity sha512-WYFdNHGaxe/j69oYREhK0cKsKYszuIuz399WXYCP+M1grfO+FCWB/RbuMgaXJsLWlzqhNjA/zLgfJ+33FwrQvw==
+
 expo-asset@~58.0.18:
   version "58.0.18"
   resolved "https://registry.yarnpkg.com/expo-asset/-/expo-asset-58.0.18.tgz#e4912cebe40d8b9f3826409378f3243eed640ae7"
@@ -2466,6 +2480,18 @@ expo-asset@~58.0.18:
     "@expo/image-utils" "^0.12.5"
     expo-constants "~58.0.13"
 
+expo-auth-session@~58.0.16:
+  version "58.0.16"
+  resolved "https://registry.yarnpkg.com/expo-auth-session/-/expo-auth-session-58.0.16.tgz#0313697b4331a551466a3b49837fe0fc91a62eb3"
+  integrity sha512-82sLhNa2GgIqpjN0GhMZFWcF+3Jec0zHuLsdNc0sMljfUb7YnuXUFdcy2yawp93p/P7MB+9BG/XMWSJ1CffTHQ==
+  dependencies:
+    expo-application "~58.1.2"
+    expo-constants "~58.0.14"
+    expo-crypto "~58.0.7"
+    expo-linking "~58.0.15"
+    expo-web-browser "~58.0.7"
+    invariant "^2.2.4"
+
 expo-constants@~58.0.13:
   version "58.0.13"
   resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-58.0.13.tgz#766177f24940be1a57887f8689f0148a8e68cb9f"
@@ -2473,6 +2499,19 @@ expo-constants@~58.0.13:
   dependencies:
     "@expo/env" "~2.5.3"
     "@expo/require-utils" "^58.0.4"
+
+expo-constants@~58.0.14:
+  version "58.0.14"
+  resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-58.0.14.tgz#70dcacd1d540927a3a835e35e104f8f9efcbc36c"
+  integrity sha512-ogn/7xLmvkEVYX6SimDkcNDn/d8qZpCTQdBWPnMI+Ry7Sfch0Dz2GIcweqddK4hrkvrSY01TS20BZfMlCpJ75g==
+  dependencies:
+    "@expo/env" "~2.5.3"
+    "@expo/require-utils" "^58.0.5"
+
+expo-crypto@~58.0.7:
+  version "58.0.7"
+  resolved "https://registry.yarnpkg.com/expo-crypto/-/expo-crypto-58.0.7.tgz#c3fba328a04585a3e74437672cd5ed79ab36af1b"
+  integrity sha512-g+4i4UpqQ5jNy1VPRvVVvr9aIdh8WwvxbpwL2ntiSESDRsXyVSeb8JM6tHVdC3b9J2nGxjtrhrsaWOo0jbSxlA==
 
 expo-dev-client@~58.0.16:
   version "58.0.16"
@@ -2551,6 +2590,14 @@ expo-linking@~58.0.14:
   integrity sha512-cYzi8CTdllCTnEk+jmlaFXUZQudGlYv0KHw/DBvJIvsh4FYKMv/De2FlMObaXPU7XnGpRkBwuBKfIyAYjSDORw==
   dependencies:
     expo-constants "~58.0.13"
+    invariant "^2.2.4"
+
+expo-linking@~58.0.15:
+  version "58.0.15"
+  resolved "https://registry.yarnpkg.com/expo-linking/-/expo-linking-58.0.15.tgz#aa63a109c2f1aeaf338ed657bd2190a7193ac471"
+  integrity sha512-N6jmeKRsMO+DXmAH1AnStVEXK4FpL3fMzam9dJWIhd/FlMt/DCNRGUn2cqM7kNsDPSHGYGBIOCGsrW+Akp0xwA==
+  dependencies:
+    expo-constants "~58.0.14"
     invariant "^2.2.4"
 
 expo-manifests@~58.0.1:
