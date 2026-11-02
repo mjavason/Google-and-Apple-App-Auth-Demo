@@ -3,6 +3,7 @@ import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import 'express-async-errors';
 import morgan from 'morgan';
+import mobileSessionRouter from './auth-mobile-session.router';
 import { BASE_URL, PORT } from './constants';
 import { adminAuth } from './firebase.config';
 import { createMobileAuthCode } from './mobile-auth.store';
@@ -226,6 +227,9 @@ app.post('/auth/mobile/redeem', async (req: Request, res: Response) => {
     });
   }
 });
+
+app.use('/auth', mobileSessionRouter);
+
 //#endregion
 
 //#region Server Setup
