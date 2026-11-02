@@ -50,19 +50,31 @@
 
             try {
                 button.disabled = true;
+
+                console.log("[AUTH] Starting authentication");
+
                 status.textContent = "Signing in with Google...";
 
-                // Original Firebase popup authentication.
+                await auth.setPersistence(
+                    firebase.auth.Auth.Persistence.LOCAL
+                );
+
+                console.log("[AUTH] Firebase persistence configured");
+
                 const result = await auth.signInWithPopup(provider);
+
+                console.log("[AUTH] Google authentication successful");
 
                 const user = result.user;
 
-                // Obtain Firebase ID token.
                 const idToken = await user.getIdToken();
+
+                console.log("[AUTH] Firebase ID token obtained");
 
                 status.textContent = "Completing authentication...";
 
-                // Exchange Firebase ID token for temporary authorization code.
+                console.log("[AUTH] Sending exchange request");
+
                 const res = await fetch(
                     `${API_URL}/auth/mobile/exchange`,
                     {
@@ -77,7 +89,14 @@
                     }
                 );
 
+                console.log("[AUTH] Exchange response:", res.status);
+
                 const data = await res.json();
+
+                console.log("[AUTH] Exchange result:", {
+                    success: data.success,
+                    hasCode: Boolean(data.code)
+                });
 
                 if (!res.ok || !data.success || !data.code) {
                     throw new Error(
@@ -85,16 +104,19 @@
                     );
                 }
 
-                // Return to Expo.
                 const callback = new URL("app://auth");
 
                 callback.searchParams.set("code", data.code);
                 callback.searchParams.set("state", state);
 
-                window.location.replace(callback.toString());
+                console.log("[AUTH] Redirect URL:", callback.toString());
+
+                status.textContent = "Redirecting to application...";
+
+                window.location.href = callback.toString();
 
             } catch (error) {
-                console.error("Sign-in error:", error);
+                console.error("[AUTH] Authentication failed:", error);
 
                 status.textContent =
                     error.message || "Authentication failed.";
@@ -102,7 +124,6 @@
                 button.disabled = false;
             }
         }
-
         button.addEventListener("click", signInWithGoogle);
     </script>
 </body>
