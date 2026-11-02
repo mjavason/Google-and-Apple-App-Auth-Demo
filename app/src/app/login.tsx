@@ -19,25 +19,22 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      // Generate a unique state for this authentication attempt.
       const state = Crypto.randomUUID();
 
-      // Prepare hosted login URL.
       const loginUrl = new URL(FRONTEND_AUTH_URL);
       loginUrl.searchParams.set('state', state);
 
-      // Open authentication session.
       const result = await WebBrowser.openAuthSessionAsync(
         loginUrl.toString(),
         'app://auth',
       );
 
       if (result.type !== 'success') {
-        throw new Error('Authentication was cancelled.');
+        return;
       }
 
-      // Read callback parameters.
       const callbackUrl = new URL(result.url);
+
       const code = callbackUrl.searchParams.get('code');
       const returnedState = callbackUrl.searchParams.get('state');
 
@@ -45,7 +42,6 @@ export default function LoginPage() {
         throw new Error('Invalid authentication response.');
       }
 
-      // Exchange one-time code for user details.
       const response = await fetch(`${API_URL}/auth/mobile/redeem`, {
         method: 'POST',
         headers: {
