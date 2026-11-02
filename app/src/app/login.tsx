@@ -4,8 +4,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 
-WebBrowser.maybeCompleteAuthSession();
-
 type AuthenticatedUser = {
   uid: string;
   email: string | null;
@@ -21,13 +19,11 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      // Generate a unique state to protect the authentication handoff.
       const state = Crypto.randomUUID();
 
       const loginUrl = new URL(FRONTEND_AUTH_URL);
       loginUrl.searchParams.set('state', state);
 
-      // Open the hosted Google login page.
       const result = await WebBrowser.openAuthSessionAsync(
         loginUrl.toString(),
         'app://auth',
@@ -42,12 +38,10 @@ export default function LoginPage() {
       const code = callbackUrl.searchParams.get('code');
       const returnedState = callbackUrl.searchParams.get('state');
 
-      // Validate the authentication response.
       if (!code || returnedState !== state) {
         throw new Error('Invalid authentication response.');
       }
 
-      // Exchange the one-time authorization code for user details.
       const response = await fetch(`${API_URL}/auth/mobile/redeem`, {
         method: 'POST',
         headers: {
@@ -58,16 +52,13 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (!response.ok || !data.success || !data.user?.uid) {
+      if (!response.ok || !data.success) {
         throw new Error(data.message || 'Authentication failed.');
       }
 
       setUser(data.user);
 
-      Alert.alert(
-        'Success',
-        `Welcome ${data.user.email ?? data.user.name ?? 'User'}`,
-      );
+      Alert.alert('Success', `Welcome ${data.user.email ?? 'User'}`);
     } catch (error) {
       console.error('Sign-in error:', error);
 
