@@ -1,80 +1,384 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Firebase Authentication Test</title>
+
+    <title>Sign In</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+                "Segoe UI", sans-serif;
+            background: #f4f6fa;
+            color: #172033;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 32px;
+            background: #fff;
+            border: 1px solid #e8ebf1;
+            border-radius: 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+
+        .logo {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: #172033;
+            color: white;
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 25px;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #778197;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        button {
+            width: 100%;
+            min-height: 50px;
+            border: none;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: #172033;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #283750;
+        }
+
+        .google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: white;
+            color: #263247;
+            border: 1px solid #dfe3eb;
+        }
+
+        .google:hover {
+            background: #f8f9fb;
+        }
+
+        .google img {
+            width: 19px;
+            height: 19px;
+        }
+
+        .status {
+            margin-top: 22px;
+            font-size: 13px;
+            color: #778197;
+            line-height: 1.5;
+        }
+
+        .success-icon {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #e8f8ef;
+            color: #16834a;
+            font-size: 28px;
+        }
+
+        .success-description {
+            color: #778197;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 12px 0 28px;
+        }
+
+        .user-email {
+            color: #172033;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .error {
+            color: #d12f3e;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .footer {
+            margin-top: 28px;
+            font-size: 11px;
+            color: #a0a8b7;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <main>
-        <h2>Google Sign In</h2>
 
-        <button id="loginBtn">Continue with Google</button>
+    <main class="card">
 
-        <p id="status">Not authenticated</p>
+        <!-- LOGIN VIEW -->
+        <section id="loginView">
 
-        <button id="returnBtn" hidden>
-            Return to App
-        </button>
+            <div class="logo">A</div>
+
+            <h1>Welcome back</h1>
+
+            <p class="description">
+                Sign in securely with your Google account
+                to continue.
+            </p>
+
+            <button id="googleSignInBtn" class="google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                Continue with Google
+            </button>
+
+            <p id="status" class="status">
+                Your account is protected with Firebase Authentication.
+            </p>
+
+        </section>
+
+        <!-- SUCCESS VIEW -->
+        <section id="successView" class="hidden">
+
+            <div class="success-icon">✓</div>
+
+            <h1>You're signed in</h1>
+
+            <p class="success-description">
+                Your account has been authenticated successfully.
+                Continue to the application to complete sign-in.
+            </p>
+
+            <p id="userEmail" class="user-email"></p>
+
+            <br />
+
+            <button id="continueBtn" class="primary">
+                Continue to App
+            </button>
+
+            <p class="footer">
+                Authentication completed securely.
+            </p>
+
+        </section>
+
     </main>
 
     <script>
-        firebase.initializeApp({
+        // Firebase configuration.
+        const firebaseConfig = {
             apiKey: "AIzaSyAH0YegOcfvhGrSkcTmBiAB8wfW7oEuSco",
             authDomain: "auth-demo-a4386.firebaseapp.com",
             projectId: "auth-demo-a4386",
             appId: "1:216685549681:web:4ba2c813f8c9439fc0a3d0"
-        });
+        };
+
+        const API_URL =
+            "https://google-and-apple-app-auth-demo-backend.onrender.com";
+
+        firebase.initializeApp(firebaseConfig);
 
         const auth = firebase.auth();
 
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        // DOM elements.
+        const loginView = document.getElementById("loginView");
+        const successView = document.getElementById("successView");
+
+        const loginBtn = document.getElementById("googleSignInBtn");
+        const continueBtn = document.getElementById("continueBtn");
+
+        const status = document.getElementById("status");
+        const userEmail = document.getElementById("userEmail");
+
+        // Expo authentication parameters.
         const params = new URLSearchParams(window.location.search);
-        const redirectUri = params.get('redirect_uri');
 
-        const loginBtn = document.getElementById('loginBtn');
-        const returnBtn = document.getElementById('returnBtn');
-        const status = document.getElementById('status');
+        const state = params.get("state");
+        const redirectUri = params.get("redirect_uri");
 
-        loginBtn.addEventListener('click', async () => {
-            try {
-                loginBtn.disabled = true;
-                status.textContent = 'Signing in...';
+        // Store the callback URL after successful exchange.
+        let callbackUrl = null;
 
-                const provider = new firebase.auth.GoogleAuthProvider();
+        function showError(message) {
+            status.textContent = message;
+            status.classList.add("error");
+            loginBtn.disabled = false;
+        }
 
-                const result = await auth.signInWithPopup(provider);
-
-                console.log('[AUTH] Login successful:', result.user);
-
-                status.textContent =
-                    `Authenticated: ${result.user.email}`;
-
-                loginBtn.hidden = true;
-                returnBtn.hidden = false;
-
-            } catch (error) {
-                console.error(error);
-
-                status.textContent = error.message;
-                loginBtn.disabled = false;
-            }
-        });
-
-        returnBtn.addEventListener('click', () => {
-            if (!redirectUri) {
-                status.textContent = 'Missing redirect URI';
+        async function signInWithGoogle() {
+            if (!state || !redirectUri) {
+                showError("Invalid authentication request.");
                 return;
             }
 
-            status.textContent = 'Returning to application...';
+            try {
+                loginBtn.disabled = true;
 
-            window.location.href = redirectUri;
+                status.classList.remove("error");
+
+                status.innerHTML =
+                    '<span class="spinner"></span>Signing in...';
+
+                // 1. Firebase authentication.
+                const result = await auth.signInWithPopup(provider);
+
+                const user = result.user;
+
+                if (!user) {
+                    throw new Error("No authenticated user returned.");
+                }
+
+                console.log("[AUTH] Firebase login successful");
+
+                // 2. Obtain Firebase ID token.
+                const idToken = await user.getIdToken();
+
+                status.innerHTML =
+                    '<span class="spinner"></span>Completing authentication...';
+
+                // 3. Exchange Firebase token with backend.
+                const response = await fetch(
+                    `${API_URL}/auth/mobile/exchange`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            idToken,
+                            state
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                console.log("[AUTH] Exchange response:", response.status);
+
+                if (!response.ok || !data.success || !data.code) {
+                    throw new Error(
+                        data.message || "Authentication exchange failed."
+                    );
+                }
+
+                console.log("[AUTH] Authorization code received");
+
+                // 4. Construct the original Expo callback.
+                const callback = new URL(redirectUri);
+
+                if (callback.protocol !== "app:") {
+                    throw new Error("Invalid application redirect URI.");
+                }
+
+                callback.searchParams.set("code", data.code);
+                callback.searchParams.set("state", state);
+
+                callbackUrl = callback.toString();
+
+                // 5. Show success screen.
+                userEmail.textContent = user.email || "";
+
+                loginView.classList.add("hidden");
+                successView.classList.remove("hidden");
+
+                console.log("[AUTH] Ready to return to Expo");
+
+            } catch (error) {
+                console.error("[AUTH] Authentication failed:", error);
+
+                showError(
+                    error.message || "Authentication failed."
+                );
+            }
+        }
+
+        // 6. Explicit user interaction to return to Expo.
+        continueBtn.addEventListener("click", () => {
+            if (!callbackUrl) {
+                return;
+            }
+
+            continueBtn.disabled = true;
+            continueBtn.textContent = "Returning to application...";
+
+            // IMPORTANT:
+            // Keep navigation directly inside this click handler.
+            window.location.href = callbackUrl;
         });
+
+        loginBtn.addEventListener("click", signInWithGoogle);
     </script>
+
 </body>
+
 </html>
