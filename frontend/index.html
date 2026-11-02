@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        button {
+            padding: 14px 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h2>Sign in</h2>
+        <button id="google-login">Continue with Google</button>
+        <p id="status"></p>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from
+            'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+
+        import {
+            getAuth,
+            GoogleAuthProvider,
+            browserSessionPersistence,
+            setPersistence,
+            signInWithRedirect,
+            getRedirectResult,
+        } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAH0YegOcfvhGrSkcTmBiAB8wfW7oEuSco",
+            authDomain: "auth-demo-a4386.firebaseapp.com",
+            projectId: "auth-demo-a4386",
+            appId: "1:216685549681:web:4ba2c813f8c9439fc0a3d0"
+        }
+
+        const API_URL = 'https://YOUR_BACKEND_URL';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const button = document.getElementById('google-login');
+        const status = document.getElementById('status');
+
+        const params = new URLSearchParams(window.location.search);
+
+        const incomingState = params.get('state');
+
+        if (incomingState) {
+            sessionStorage.setItem('mobile_auth_state', incomingState);
+        }
+
+        const state =
+            incomingState || sessionStorage.getItem('mobile_auth_state');
+
+        async function initialize() {
+            if (!state) {
+                status.textContent = 'Invalid authentication request.';
+                button.disabled = true;
+                return;
+            }
+
+            try {
+                await setPersistence(auth, browserSessionPersistence);
+
+                // Check whether Google has just redirected back to this page.
+                const result = await getRedirectResult(auth);
+
+                if (!result) return;
+
+                status.textContent = 'Completing authentication...';
+                button.disabled = true;
+
+                // Obtain Firebase ID token.
+                const firebaseIdToken = await result.user.getIdToken();
+
+                // Exchange Firebase ID token for a temporary authorization code.
+                const response = await fetch(
+                    `${API_URL}/auth/mobile/exchange`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            idToken: firebaseIdToken,
+                            state,
+                        }),
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.code) {
+                    throw new Error(data.message || 'Authentication failed');
+                }
+
+                // Return to the Expo application.
+                const callback = new URL('app://auth');
+                callback.searchParams.set('code', data.code);
+                callback.searchParams.set('state', state);
+
+                window.location.replace(callback.toString());
+
+            } catch (error) {
+                console.error(error);
+                status.textContent =
+                    error instanceof Error ? error.message : 'Authentication failed';
+
+                button.disabled = false;
+            }
+        }
+
+        button.addEventListener('click', async () => {
+            try {
+                button.disabled = true;
+                status.textContent = 'Redirecting to Google...';
+
+                const provider = new GoogleAuthProvider();
+
+                await signInWithRedirect(auth, provider);
+            } catch (error) {
+                console.error(error);
+                status.textContent = 'Could not start Google sign-in.';
+                button.disabled = false;
+            }
+        });
+
+        initialize();
+    </script>
+</body>
+
+</html>

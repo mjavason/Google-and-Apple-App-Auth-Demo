@@ -1711,11 +1711,6 @@
   dependencies:
     merge-options "^3.0.4"
 
-"@react-native-google-signin/google-signin@^16.1.5":
-  version "16.1.5"
-  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-16.1.5.tgz#0de2624f291050b1e7bd935919cdd06080f13bb0"
-  integrity sha512-9rmMwACzHK9Cbd0Yp7efg5uWgiYoLwmNAJh4gRCuMcSQH+qplpK7E4d1Q4tbsD8M9jvvVtRX2Z0AP9wwBKmPrQ==
-
 "@react-native-masked-view/masked-view@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@react-native-masked-view/masked-view/-/masked-view-0.3.2.tgz#7064533a573e3539ec912f59c1f457371bf49dd9"
@@ -2583,14 +2578,6 @@ expo-keep-awake@~58.0.3:
   version "58.0.3"
   resolved "https://registry.yarnpkg.com/expo-keep-awake/-/expo-keep-awake-58.0.3.tgz#c29bc382d8d5b78e455c8f565fed36cf302645c7"
   integrity sha512-wLRF+XeVsD/Rt/ZyX+A0mk1brdf8vefWizNAPzqV5eOCgkj23LCRZdN8gUi5X8UwyR8UJ7Y7Dzdz4YDGB/4c9Q==
-
-expo-linking@~58.0.14:
-  version "58.0.14"
-  resolved "https://registry.yarnpkg.com/expo-linking/-/expo-linking-58.0.14.tgz#44fdf0037effc07a174d1357c7aa4c7dc0f241ff"
-  integrity sha512-cYzi8CTdllCTnEk+jmlaFXUZQudGlYv0KHw/DBvJIvsh4FYKMv/De2FlMObaXPU7XnGpRkBwuBKfIyAYjSDORw==
-  dependencies:
-    expo-constants "~58.0.13"
-    invariant "^2.2.4"
 
 expo-linking@~58.0.15:
   version "58.0.15"

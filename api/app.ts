@@ -5,6 +5,7 @@ import 'express-async-errors';
 import morgan from 'morgan';
 import { BASE_URL, PORT } from './constants';
 import { adminAuth } from './firebase.config';
+import { createMobileAuthCode } from './mobile-auth.store';
 import { setupSwagger } from './swagger.config';
 
 //#region App Setup
@@ -101,6 +102,128 @@ app.post('/firebase/sign-in', async (req: Request, res: Response) => {
     });
   } catch (err) {
     res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+});
+
+/**
+ * @swagger
+ * /auth/mobile/exchange:
+ *   post:
+ *     summary: Exchange Firebase ID token for mobile authorization code
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *               - state
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Authorization code generated
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Invalid or expired Firebase ID token
+ */
+app.post('/auth/mobile/exchange', async (req: Request, res: Response) => {
+  const { idToken, state } = req.body;
+
+  if (!idToken || !state) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing ID token or state',
+    });
+  }
+
+  try {
+    const decoded = await adminAuth.verifyIdToken(idToken);
+
+    const code = createMobileAuthCode(decoded.uid, state);
+
+    return res.json({
+      success: true,
+      code,
+    });
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired Firebase ID token',
+    });
+  }
+});
+
+import { redeemMobileAuthCode } from './mobile-auth.store';
+
+/**
+ * @swagger
+ * /auth/mobile/redeem:
+ *   post:
+ *     summary: Redeem mobile authorization code
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - state
+ *             properties:
+ *               code:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated
+ *       400:
+ *         description: Invalid, expired or already redeemed code
+ */
+app.post('/auth/mobile/redeem', async (req: Request, res: Response) => {
+  const { code, state } = req.body;
+
+  if (!code || !state) {
+    return res.status(400).json({
+      success: false,
+      message: 'Missing authorization code or state',
+    });
+  }
+
+  const uid = redeemMobileAuthCode(code, state);
+
+  if (!uid) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid, expired or already redeemed authorization code',
+    });
+  }
+
+  try {
+    const user = await adminAuth.getUser(uid);
+
+    return res.json({
+      success: true,
+      user: {
+        uid: user.uid,
+        email: user.email ?? null,
+        name: user.displayName ?? null,
+        photo: user.photoURL ?? null,
+      },
+    });
+  } catch (err) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
   }
 });
 //#endregion
