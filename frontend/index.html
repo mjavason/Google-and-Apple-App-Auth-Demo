@@ -40,60 +40,56 @@
         const sessionId = params.get("sessionId");
         const platform = params.get("platform");
 
+
         async function signInWithGoogle() {
-            if (!sessionId || !["ios", "android"].includes(platform)) {
-                status.textContent = "Invalid authentication session.";
+            if (!state) {
+                status.textContent = 'Invalid authentication request.';
                 return;
             }
 
             try {
                 button.disabled = true;
-                status.textContent = "Signing in with Google...";
+                status.textContent = 'Signing in with Google...';
 
                 const result = await auth.signInWithPopup(provider);
                 const idToken = await result.user.getIdToken();
 
-                status.textContent = "Completing authentication...";
+                status.textContent = 'Completing authentication...';
 
                 const response = await fetch(
-                    `${API_URL}/auth/mobile/complete`,
+                    `${API_URL}/auth/mobile/exchange`,
                     {
-                        method: "POST",
+                        method: 'POST',
                         headers: {
-                            "Content-Type": "application/json"
+                            'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            sessionId,
-                            idToken
-                        })
+                        body: JSON.stringify({ idToken, state }),
                     }
                 );
 
                 const data = await response.json();
 
-                if (!response.ok || !data.success) {
-                    throw new Error(data.message || "Authentication failed.");
+                if (!response.ok || !data.success || !data.code) {
+                    throw new Error(data.message || 'Authentication failed.');
                 }
 
-                status.textContent = "Authentication complete.";
+                // Return to the Expo application.
+                const callbackUrl = new URL('app://auth');
+                callbackUrl.searchParams.set('code', data.code);
+                callbackUrl.searchParams.set('state', state);
 
-                if (platform === "android") {
-                    // This closes the Android authentication browser
-                    // by returning control to the app.
-                    window.location.href = "app://auth/complete";
-                } else {
-                    // Expo polls the backend and dismisses the browser.
-                    status.textContent = "Authentication complete. You can return to the app.";
-                }
+                window.location.href = callbackUrl.toString();
+
             } catch (error) {
-                console.error("Authentication error:", error);
+                console.error('Sign-in error:', error);
 
-                status.textContent =
-                    error.message || "Authentication failed.";
-
+                status.textContent = error.message || 'Authentication failed.';
                 button.disabled = false;
             }
         }
+
+        button.addEventListener('click', signInWithGoogle);
+
 
         button.addEventListener("click", signInWithGoogle);
     </script>
