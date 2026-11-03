@@ -1,24 +1,14 @@
-# App Auth Demo
+# Google + Apple App Auth Demo
 
-This repository contains a small full-stack authentication demo built with an Expo React Native app and an Express API. The current implementation focuses on Google Sign-In, with the backend validating Firebase ID tokens before returning the authenticated user payload.
+This repository contains a small full-stack auth demo for a mobile application. The checked-in implementation uses an Expo React Native app and an Express backend to verify Firebase-issued user identities and exchange a mobile authorization code between the browser callback flow and the API.
 
-## Overview
+## What is in this repo?
 
-- `app/` — Expo + React Native app using Firebase client SDK and Google Sign-In
-- `api/` — Express API that verifies Firebase tokens and exposes Swagger docs
-- Shared auth flow: Google sign-in → Firebase credential exchange → backend token verification
+- `app/` — Expo app with a login screen, Firebase client setup, and the mobile auth callback flow
+- `api/` — Express API with Firebase Admin verification and internal mobile auth code storage
+- `frontend/` — a lightweight HTML callback page used to return from browser auth back to the app
 
-## Current implementation
-
-The codebase currently includes:
-
-- Google Sign-In flow in `app/src/features/auth/google-sign-in.ts`
-- Firebase client setup in `app/src/lib/firebase.ts`
-- API endpoint `POST /firebase/sign-in` in `api/app.ts`
-- Firebase Admin verification in `api/firebase.config.ts`
-- Swagger docs at `http://localhost:5000/docs`
-
-Apple Sign-In is not implemented in the checked-in code yet, so the README reflects the Google-based authentication flow that is actually present.
+This project is a demo, not a production auth system. It is intended to show one way to bridge a mobile app to a backend that verifies Firebase users and persists a short-lived auth code during browser callback handoff.
 
 ## Project structure
 
@@ -26,27 +16,32 @@ Apple Sign-In is not implemented in the checked-in code yet, so the README refle
 app-auth-demo/
 ├── README.md
 ├── app/
+│   ├── README.md
+│   ├── package.json
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── index.tsx
-│   │   │   └── login.tsx
-│   │   ├── features/
-│   │   │   └── auth/
-│   │   │       └── google-sign-in.ts
-│   │   └── lib/
-│   │       ├── api.ts
-│   │       ├── auth.api.ts
-│   │       └── firebase.ts
-│   ├── package.json
+│   │   │   ├── login.tsx
+│   │   │   └── test.tsx
+│   │   ├── common/
+│   │   ├── components/
+│   │   ├── constants/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   └── ...
 │   └── ...
 ├── api/
+│   ├── README.md
 │   ├── app.ts
 │   ├── constants.ts
 │   ├── env.sample
 │   ├── firebase.config.ts
-│   ├── swagger.config.ts
+│   ├── mobile-auth.store.ts
 │   ├── package.json
+│   ├── swagger.config.ts
 │   └── ...
+├── frontend/
+│   └── auth-test.html
 └── .gitignore
 ```
 
@@ -55,26 +50,27 @@ app-auth-demo/
 - Node.js 18+
 - npm
 - A Firebase project with:
-  - Web app config for Expo
-  - Google Sign-In enabled
-  - Firebase Admin service account credentials
+  - a web app config (for client-side Firebase initialization)
+  - Firebase Authentication enabled
+  - a Firebase Admin service account configured for backend verification
+- A URL that can be opened from the app during the browser callback flow, such as the included `frontend/auth-test.html` served locally
 
-## API setup
+## Backend setup
 
-1. Install dependencies:
+1. Install API dependencies:
 
    ```bash
    cd api
    npm install
    ```
 
-2. Create an environment file based on `api/env.sample`:
+2. Create an environment file from the sample:
 
    ```bash
-   cp api/env.sample api/.env
+   cp env.sample .env
    ```
 
-3. Fill in the values in `api/.env`:
+3. Fill in your Firebase Admin values in `api/.env`:
 
    ```env
    PORT=5000
@@ -84,7 +80,7 @@ app-auth-demo/
    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
    ```
 
-   The private key must include escaped newlines as shown above so it can be loaded correctly by the app.
+   `FIREBASE_PRIVATE_KEY` must include escaped newlines so that the Admin SDK can read it correctly.
 
 4. Start the API:
 
@@ -99,60 +95,73 @@ app-auth-demo/
    http://localhost:5000/docs
    ```
 
-## App setup
+## Mobile app setup
 
-1. Install dependencies:
+1. Install Expo app dependencies:
 
    ```bash
    cd app
    npm install
    ```
 
-2. Add your client-side Firebase and API environment variables. The app expects `EXPO_PUBLIC_*` values in Expo environment files such as `.env.local` or `.env`.
-
-   Example:
+2. Add your Expo environment variables in `app/.env` or `.env.local`:
 
    ```env
    EXPO_PUBLIC_API_URL=http://localhost:5000
-   EXPO_PUBLIC_FIREBASE_API_KEY=your-api-key
+   EXPO_PUBLIC_FIREBASE_API_KEY=your-firebase-web-api-key
    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
    EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-   EXPO_PUBLIC_FIREBASE_APP_ID=your-app-id
+   EXPO_PUBLIC_FIREBASE_APP_ID=your-firebase-app-id
+   EXPO_PUBLIC_FRONTEND_AUTH_URL=http://127.0.0.1:5500/frontend/auth-test.html
    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your-google-web-client-id
    ```
 
-   You can find the Firebase web config values in the Firebase console under Project settings → Your apps → Web app configuration.
+   The `EXPO_PUBLIC_FRONTEND_AUTH_URL` value should point to the page the app opens during the auth callback flow. The repo includes a simple callback page at `frontend/auth-test.html`, which can be served locally.
 
-3. Start the Expo app:
+3. Serve the callback page locally if you are using the included demo page:
+
+   ```bash
+   cd frontend
+   python -m http.server 5500
+   ```
+
+4. Start the Expo app:
 
    ```bash
    cd app
    npx expo start
    ```
 
-   Then launch the app on an emulator, simulator, or Expo Go.
+5. Launch the app in an emulator, simulator, or Expo Go.
 
-## Authentication flow
+## Authentication flow in this repo
 
-The current flow is:
+The actual flow in this project is:
 
-1. User opens the login screen in `app/src/app/login.tsx`.
-2. `googleLogin()` in `app/src/features/auth/google-sign-in.ts` calls Google Sign-In.
-3. The app exchanges the Google ID token for a Firebase credential with `signInWithCredential(...)`.
-4. The app sends the Firebase ID token to `POST /firebase/sign-in`.
-5. The Express server verifies the token with `adminAuth.verifyIdToken(...)`.
-6. The server returns the authenticated user data (`uid`, `email`, `name`, `photo`).
+1. The app loads `app/src/app/login.tsx` and the user taps the Google button.
+2. The app builds a redirect URL and opens a browser session to `FRONTEND_AUTH_URL` with a random `state` value.
+3. The browser callback page returns to the app via the configured redirect URI.
+4. The app validates the returned `code` and `state`, then calls:
+   - `POST /auth/mobile/exchange` with the Firebase ID token and state
+5. The API verifies the token with `adminAuth.verifyIdToken(...)` and creates a short-lived mobile auth code in `api/mobile-auth.store.ts`.
+6. The app calls:
+   - `POST /auth/mobile/redeem` with the returned code and state
+7. The backend validates and redeems the code, then fetches the Firebase user from `adminAuth.getUser(uid)` and returns the user payload.
+
+The app displays the resulting user information (`uid`, `email`, `name`, `photo`).
 
 ## API endpoints
 
 ### `GET /`
-Returns the health status of the API.
+Returns the API status.
 
 ### `GET /api`
 Calls `https://httpbin.org` as a simple demo external API request.
 
 ### `POST /firebase/sign-in`
-Accepts:
+Validates a Firebase ID token and returns the decoded user profile.
+
+Request body:
 
 ```json
 {
@@ -160,7 +169,7 @@ Accepts:
 }
 ```
 
-Returns:
+Response:
 
 ```json
 {
@@ -172,9 +181,21 @@ Returns:
 }
 ```
 
+### `POST /auth/mobile/exchange`
+Exchanges a Firebase ID token and state for a one-time mobile auth code.
+
+### `POST /auth/mobile/redeem`
+Validates and redeems the one-time code, returning the Firebase user profile.
+
+### Swagger docs
+
+```text
+http://localhost:5000/docs
+```
+
 ## Notes
 
-- The app is structured as a mobile auth demo rather than a production-ready auth system.
-- The backend is intentionally lightweight and is designed to validate Firebase-issued tokens.
-- If you want to extend the project, the next natural steps would be adding user persistence, refresh token handling, and more providers.
-
+- This is a demo implementation for learning and prototyping mobile auth patterns.
+- The mobile auth code is kept in memory only and expires after a short TTL.
+- The project does not include full production hardening such as refresh token rotation, secure storage, or account linking.
+- Apple Sign-In is not implemented in the checked-in code yet; the current flow is centered on the browser-assisted mobile auth exchange described above.

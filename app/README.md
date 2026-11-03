@@ -1,56 +1,53 @@
-# Welcome to your Expo app 👋
+# Expo App Auth Demo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This directory contains the mobile app for the repository's Firebase-based auth flow. It uses Expo Router, Firebase client SDK, and an `expo-auth-session` redirect flow to complete the browser-based auth exchange.
 
-## Get started
+## Getting started
 
-1. Install dependencies
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Add the required environment variables in `.env` or `.env.local`:
+
+   ```env
+   EXPO_PUBLIC_API_URL=http://localhost:5000
+   EXPO_PUBLIC_FIREBASE_API_KEY=your-firebase-web-api-key
+   EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+   EXPO_PUBLIC_FIREBASE_APP_ID=your-firebase-app-id
+   EXPO_PUBLIC_FRONTEND_AUTH_URL=http://127.0.0.1:5500/frontend/auth-test.html
+   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your-google-web-client-id
+   ```
+
+3. Start the app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Run it in an emulator, simulator, or Expo Go.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## App flow
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `src/app/login.tsx` renders the sign-in screen.
+- The app opens a browser session to `FRONTEND_AUTH_URL` with a generated `state` value.
+- After the callback returns, the app validates the response and calls the backend auth endpoints.
+- The API exchanges the Firebase ID token for a short-lived code and resolves the user profile.
 
-## Get a fresh project
-
-When you're ready, run:
+## Useful scripts
 
 ```bash
+npm start
+npm run web
+npm run android
+npm run ios
 npm run reset-project
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## Notes
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- This is a demo app intended for local development and testing.
+- Make sure the callback URL is reachable while the app is running.

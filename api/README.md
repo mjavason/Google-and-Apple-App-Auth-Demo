@@ -1,55 +1,55 @@
-# Typescript-SF-Template-App
+# API Auth Demo
 
-This is a single file TypeScript template app for faster idea testing and prototyping. It contains tests, one demo root API call, basic async error handling, one demo axios call, and .env support.
+This directory contains the backend for the mobile auth demo. It is a lightweight Express server that verifies Firebase user tokens, creates short-lived mobile auth codes, and exposes Swagger documentation.
 
-**Prerequisites**
+## What it does
 
-- Node.js and npm (or yarn) installed on your system. You can download them from the [official Node.js website](https://nodejs.org).
+- Initializes Firebase Admin SDK with service-account credentials
+- Verifies Firebase ID tokens with `adminAuth.verifyIdToken(...)`
+- Exposes demo auth endpoints for sign-in and mobile callback exchange
+- Returns interactive API docs at `/docs`
 
-**Installation**
+## Project scripts
 
-1. Clone this repository using git:
+```bash
+npm install
+npm run dev
+npm run build
+npm run start
+npm run test
+```
 
-   ```bash
-   git clone https://github.com/mjavason/...
-   ```
+## Environment configuration
 
-2. Navigate to the project directory:
+This project expects an `.env` file in `api/` based on `env.sample`:
 
-   ```bash
-   cd project-name...
-   ```
+```env
+PORT=5000
+BASE_URL=http://localhost:5000
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
 
-3. Install the project's dependencies:
+The private key must keep escaped newline characters so Firebase Admin can parse it correctly.
 
-   ```bash
-   npm install
-   ```
+## Main endpoints
 
-**Running the project**
+- `GET /` — health check / API status
+- `GET /api` — calls a demo external API (`httpbin.org`)
+- `POST /firebase/sign-in` — verifies an ID token and returns a user payload
+- `POST /auth/mobile/exchange` — creates a short-lived auth code after validating a Firebase ID token
+- `POST /auth/mobile/redeem` — validates the auth code and returns the authenticated Firebase user
 
-There are four main scripts defined in this project's `package.json` file:
+## Swagger docs
 
-- **npm run dev**
+Once the server is running:
 
-  - This script is used for development purposes. It will start a development server and enable hot reloading.
+```text
+http://localhost:5000/docs
+```
 
-- **npm run build**
+## Notes
 
-  - This script is used to build the project for production. It will bundle your code, minify files, and store them in a 'build' folder.
-
-- **npm run start**
-
-  - This script starts the application in production mode. It's what you would typically run after building the project for deployment.
-
-- **npm run test**
-  - This script runs the project's tests. Make sure you've installed the packages before running this script.
-
-**API Documentation**
-
-After starting the API, you can access the documentation at the `/docs` route. Open your browser and go to [http://localhost:5000/docs](http://localhost:5000/docs) to view the API documentation.
-
-**Additional Notes**
-
-- Refer to the `package.json` file for any additional scripts specific to this project.
-- Configuration files (e.g., `.env`) might be required for the project to run properly. Take a look at the `env.sample` file for a guide. Make sure you have them set up according to your environment.
+- `mobile-auth.store.ts` keeps codes in memory for demo purposes only.
+- This backend is intentionally simple and not meant to be a full production auth service.
