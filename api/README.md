@@ -1,12 +1,13 @@
 # API Auth Demo
 
-This directory contains the backend for the mobile auth demo. It is a lightweight Express server that verifies Firebase user tokens, creates short-lived mobile auth codes, and exposes Swagger documentation.
+This directory contains the backend for the Expo Google/Apple authentication demo. It verifies Firebase ID tokens, creates short-lived browser-to-mobile authorization codes, and exposes Swagger documentation.
 
 ## What it does
 
 - Initializes Firebase Admin SDK with service-account credentials
 - Verifies Firebase ID tokens with `adminAuth.verifyIdToken(...)`
 - Exposes demo auth endpoints for sign-in and mobile callback exchange
+- Redeems one-time authorization codes and loads the Firebase user
 - Returns interactive API docs at `/docs`
 
 ## Project scripts
@@ -40,6 +41,8 @@ The private key must keep escaped newline characters so Firebase Admin can parse
 - `POST /firebase/sign-in` — verifies an ID token and returns a user payload
 - `POST /auth/mobile/exchange` — creates a short-lived auth code after validating a Firebase ID token
 - `POST /auth/mobile/redeem` — validates the auth code and returns the authenticated Firebase user
+
+Authorization codes expire after 60 seconds and are invalidated after a redemption attempt.
 
 ## Swagger docs
 
