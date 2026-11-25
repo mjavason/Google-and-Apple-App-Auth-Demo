@@ -91,23 +91,48 @@
             background: #283750;
         }
 
-        .google {
+        .auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
+            width: 100%;
+            min-height: 50px;
+            padding: 12px 18px;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .auth-btn:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+
+        .auth-btn svg,
+        .auth-btn img {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .google {
             background: white;
             color: #263247;
             border: 1px solid #dfe3eb;
         }
 
-        .google:hover {
-            background: #f8f9fb;
-        }
-
-        .google img {
-            width: 19px;
-            height: 19px;
+        .apple {
+            background: #000;
+            color: white;
+            border: 1px solid #000;
         }
 
         .status {
@@ -189,20 +214,56 @@
             <h1>Welcome back</h1>
 
             <p class="description">
-                Sign in securely with your Google account
+                Sign in securely with your Google or Apple account
                 to continue.
             </p>
 
-            <button id="googleSignInBtn" class="google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-                Continue with Google
-            </button>
+            <div class="auth-buttons">
+
+                <!-- GOOGLE SIGN IN -->
+                <button id="googleSignInBtn" class="auth-btn google">
+
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+
+                        <path fill="#4285F4"
+                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.9c-.58 2.96-2.26 5.48-4.74 7.18l7.73 6C44.4 37.91 46.98 31.8 46.98 24.55z" />
+
+                        <path fill="#FBBC05"
+                            d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a24 24 0 0 0 0 21.56z" />
+
+                        <path fill="#34A853"
+                            d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                    </svg>
+
+                    Continue with Google
+
+                </button>
+
+                <!-- APPLE SIGN IN -->
+                <button id="appleSignInBtn" class="auth-btn apple">
+
+                    <svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="currentColor">
+
+                        <path
+                            d="M16.37 1.43c0 1.14-.42 2.28-1.25 3.13-.83.83-2.2 1.48-3.39 1.38-.15-1.1.43-2.34 1.18-3.16.84-.88 2.3-1.53 3.46-1.35zM20.94 17.03c-.56 1.25-.83 1.8-1.55 2.91-1.01 1.54-2.44 3.46-4.2 3.48-1.56.02-1.96-1.02-4.07-1.01-2.11.01-2.55 1.04-4.11 1.02-1.76-.02-3.11-1.75-4.12-3.29-2.82-4.31-3.12-9.37-1.38-12.07 1.23-1.92 3.18-3.04 5.02-3.04 1.87 0 3.05 1.02 4.6 1.02 1.5 0 2.42-1.02 4.59-1.02 1.64 0 3.38.89 4.61 2.42-4.05 2.22-3.39 8.01.61 9.58z" />
+
+                    </svg>
+
+                    Continue with Apple
+
+                </button>
+
+            </div>
 
             <p id="status" class="status">
                 Your account is protected with Firebase Authentication.
             </p>
 
         </section>
+
 
         <!-- SUCCESS VIEW -->
         <section id="successView" class="hidden">
@@ -232,7 +293,9 @@
 
     </main>
 
+
     <script>
+
         // Firebase configuration.
         const firebaseConfig = {
             apiKey: "AIzaSyAH0YegOcfvhGrSkcTmBiAB8wfW7oEuSco",
@@ -244,21 +307,38 @@
         const API_URL =
             "https://google-and-apple-app-auth-demo-backend.onrender.com";
 
-        firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firebase only once.
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
 
         const auth = firebase.auth();
 
-        const provider = new firebase.auth.GoogleAuthProvider();
+
+        // Google provider.
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+
+        // Apple provider.
+        const appleProvider = new firebase.auth.OAuthProvider("apple.com");
+
+        appleProvider.addScope("email");
+        appleProvider.addScope("name");
+
 
         // DOM elements.
         const loginView = document.getElementById("loginView");
         const successView = document.getElementById("successView");
 
-        const loginBtn = document.getElementById("googleSignInBtn");
+        const googleSignInBtn = document.getElementById("googleSignInBtn");
+        const appleSignInBtn = document.getElementById("appleSignInBtn");
+
         const continueBtn = document.getElementById("continueBtn");
 
         const status = document.getElementById("status");
         const userEmail = document.getElementById("userEmail");
+
 
         // Expo authentication parameters.
         const params = new URLSearchParams(window.location.search);
@@ -266,28 +346,48 @@
         const state = params.get("state");
         const redirectUri = params.get("redirect_uri");
 
-        // Store the callback URL after successful exchange.
+
+        // Store callback URL after successful exchange.
         let callbackUrl = null;
 
+
+        // Display authentication errors.
         function showError(message) {
+
             status.textContent = message;
+
             status.classList.add("error");
-            loginBtn.disabled = false;
+
+            googleSignInBtn.disabled = false;
+            appleSignInBtn.disabled = false;
         }
 
-        async function signInWithGoogle() {
+
+        // Update authentication status.
+        function setLoading(message) {
+
+            googleSignInBtn.disabled = true;
+            appleSignInBtn.disabled = true;
+
+            status.classList.remove("error");
+
+            status.innerHTML =
+                '<span class="spinner"></span>' + message;
+        }
+
+
+        // Shared authentication flow for Google and Apple.
+        async function signInWithProvider(provider, providerName) {
+
             if (!state || !redirectUri) {
                 showError("Invalid authentication request.");
                 return;
             }
 
             try {
-                loginBtn.disabled = true;
 
-                status.classList.remove("error");
+                setLoading("Signing in...");
 
-                status.innerHTML =
-                    '<span class="spinner"></span>Signing in...';
 
                 // 1. Firebase authentication.
                 const result = await auth.signInWithPopup(provider);
@@ -295,25 +395,33 @@
                 const user = result.user;
 
                 if (!user) {
-                    throw new Error("No authenticated user returned.");
+                    throw new Error(
+                        providerName + " authentication returned no user."
+                    );
                 }
 
-                console.log("[AUTH] Firebase login successful");
+                console.log(
+                    `[AUTH] ${providerName} login successful`
+                );
+
 
                 // 2. Obtain Firebase ID token.
                 const idToken = await user.getIdToken();
 
-                status.innerHTML =
-                    '<span class="spinner"></span>Completing authentication...';
+
+                setLoading("Completing authentication...");
+
 
                 // 3. Exchange Firebase token with backend.
                 const response = await fetch(
                     `${API_URL}/auth/mobile/exchange`,
                     {
                         method: "POST",
+
                         headers: {
                             "Content-Type": "application/json"
                         },
+
                         body: JSON.stringify({
                             idToken,
                             state
@@ -321,62 +429,140 @@
                     }
                 );
 
+
                 const data = await response.json();
 
-                console.log("[AUTH] Exchange response:", response.status);
+                console.log(
+                    "[AUTH] Exchange response:",
+                    response.status
+                );
+
 
                 if (!response.ok || !data.success || !data.code) {
+
                     throw new Error(
-                        data.message || "Authentication exchange failed."
+                        data.message ||
+                        "Authentication exchange failed."
                     );
+
                 }
 
+
                 console.log("[AUTH] Authorization code received");
+
 
                 // 4. Construct the original Expo callback.
                 const callback = new URL(redirectUri);
 
                 if (callback.protocol !== "app:") {
-                    throw new Error("Invalid application redirect URI.");
+                    throw new Error(
+                        "Invalid application redirect URI."
+                    );
                 }
 
+
                 callback.searchParams.set("code", data.code);
+
                 callback.searchParams.set("state", state);
 
                 callbackUrl = callback.toString();
+
 
                 // 5. Show success screen.
                 userEmail.textContent = user.email || "";
 
                 loginView.classList.add("hidden");
+
                 successView.classList.remove("hidden");
 
-                console.log("[AUTH] Ready to return to Expo");
+
+                console.log(
+                    `[AUTH] ${providerName} authentication completed.`
+                );
+
 
             } catch (error) {
-                console.error("[AUTH] Authentication failed:", error);
+
+                console.error(
+                    `[AUTH] ${providerName} authentication failed:`,
+                    error
+                );
+
+
+                // Handle popup cancellation.
+                if (error.code === "auth/popup-closed-by-user") {
+
+                    status.textContent =
+                        "Authentication window was closed.";
+
+                    googleSignInBtn.disabled = false;
+                    appleSignInBtn.disabled = false;
+
+                    return;
+                }
+
 
                 showError(
                     error.message || "Authentication failed."
                 );
+
             }
+
         }
+
+
+        // Google authentication.
+        async function signInWithGoogle() {
+
+            await signInWithProvider(
+                googleProvider,
+                "Google"
+            );
+
+        }
+
+
+        // Apple authentication.
+        async function signInWithApple() {
+
+            await signInWithProvider(
+                appleProvider,
+                "Apple"
+            );
+
+        }
+
 
         // 6. Explicit user interaction to return to Expo.
         continueBtn.addEventListener("click", () => {
+
             if (!callbackUrl) {
                 return;
             }
 
             continueBtn.disabled = true;
-            continueBtn.textContent = "Returning to application...";
 
-            // IMPORTANT:
+            continueBtn.textContent =
+                "Returning to application...";
+
+
             // Keep navigation directly inside this click handler.
             window.location.href = callbackUrl;
+
         });
 
-        loginBtn.addEventListener("click", signInWithGoogle);
+
+        // Register authentication event listeners.
+        googleSignInBtn.addEventListener(
+            "click",
+            signInWithGoogle
+        );
+
+        appleSignInBtn.addEventListener(
+            "click",
+            signInWithApple
+        );
+
     </script>
 
 </body>

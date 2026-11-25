@@ -9,12 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.me.authdemo",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "bundleIdentifier": "com.me.authdemo"
     },
     "android": {
       "package": "com.me.authdemo",
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
